@@ -41,9 +41,10 @@ int main(int argc, char** argv) {
 
   //create Background Subtractor objects
   Ptr<BackgroundSubtractor> pBackSub;
-  int history = 500;
-  double varThreshold = 50;
+  int history = 500; //CHANGE?
+  double varThreshold = 100; // CHANGE?
   pBackSub = createBackgroundSubtractorMOG2(history, varThreshold);
+  //pBackSub = createBackgroundSubtractorKNN(history, 400);
 
   Mat cameraFrame, hand;
 
@@ -60,12 +61,13 @@ int main(int argc, char** argv) {
     hand = removeBackground(cameraFrame, pBackSub);
     imshow("only hand", hand);
     Mat threshImage;
-    threshold(hand, threshImage, 60, 255, THRESH_BINARY);
+    double thresholdValue = 100; // CHANGE?
+    threshold(hand, threshImage, thresholdValue, 255, THRESH_BINARY);
     imshow("threshold", threshImage);
 
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
-    findContours(threshImage, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
+    findContours(threshImage, contours, hierarchy, RETR_LIST, CHAIN_APPROX_SIMPLE);
 
     Mat contoursImage = Mat::zeros(threshImage.rows, threshImage.cols, CV_8UC3);
     Scalar color(255, 0, 0);
