@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\Louise\Documents\Github\handraw\handraw\Binaries\CMakeFiles\6443b3d322723448fddde4bcd8f65467\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{BFCFEC4E-D79C-3E44-BE0D-20C6838C3098}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

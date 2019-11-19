@@ -1,0 +1,3 @@
+﻿  video_test.cpp
+D:\Louise\Documents\Github\handraw\handraw\video_test\video_test.cpp(19): warning C4305: 'initialisation' : troncation de 'double' à 'float'
+  test.vcxproj -> D:\Louise\Documents\Github\handraw\handraw\Binaries\RelWithDebInfo\test.exe

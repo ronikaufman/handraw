@@ -1,0 +1,155 @@
+The system is: Windows - 10.0.18362 - AMD64
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler:  
+Build flags: 
+Id flags:  
+
+The output was:
+0
+Microsoft (R) Build Engine version 15.9.21+g9802d43bc3 pour .NET Framework
+Copyright (C) Microsoft Corporation. Tous droits r‚serv‚s.
+
+La g‚n‚ration a d‚marr‚ 19/11/2019 21:20:50.
+Projet "D:\Louise\Documents\Github\handraw\handraw\Binaries\CMakeFiles\3.15.3\CompilerIdCXX\CompilerIdCXX.vcxproj" sur le noud 1 (cibles par d‚faut).
+PrepareForBuild:
+  Cr‚ation du r‚pertoire "Debug\".
+  Cr‚ation du r‚pertoire "Debug\CompilerIdCXX.tlog\".
+InitializeBuildStatus:
+  Cr‚ation de "Debug\CompilerIdCXX.tlog\unsuccessfulbuild", car "AlwaysCreate" a ‚t‚ sp‚cifi‚.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\bin\HostX86\x64\CL.exe /c /nologo /W0 /WX- /diagnostics:classic /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc141.pdb" /Gd /TP /FC /errorReport:queue CMakeCXXCompilerId.cpp
+  CMakeCXXCompilerId.cpp
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\bin\HostX86\x64\link.exe /ERRORREPORT:QUEUE /OUT:".\CompilerIdCXX.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\CompilerIdCXX.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\CompilerIdCXX.lib" /MACHINE:X64 Debug\CMakeCXXCompilerId.obj
+  CompilerIdCXX.vcxproj -> D:\Louise\Documents\Github\handraw\handraw\Binaries\CMakeFiles\3.15.3\CompilerIdCXX\.\CompilerIdCXX.exe
+PostBuildEvent:
+  for %%i in (cl.exe) do @echo CMAKE_CXX_COMPILER=%%~$PATH:i
+  :VCEnd
+  CMAKE_CXX_COMPILER=C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\bin\Hostx86\x64\cl.exe
+FinalizeBuildStatus:
+  Suppression du fichier "Debug\CompilerIdCXX.tlog\unsuccessfulbuild".
+  Mise … jour de l'horodatage "Debug\CompilerIdCXX.tlog\CompilerIdCXX.lastbuildstate".
+G‚n‚ration du projet "D:\Louise\Documents\Github\handraw\handraw\Binaries\CMakeFiles\3.15.3\CompilerIdCXX\CompilerIdCXX.vcxproj" termin‚e (cibles par d‚faut).
+
+La g‚n‚ration a r‚ussi.
+    0 Avertissement(s)
+    0 Erreur(s)
+
+Temps ‚coul‚ 00:00:02.16
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.exe"
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.vcxproj"
+
+The CXX compiler identification is MSVC, found in "D:/Louise/Documents/Github/handraw/handraw/Binaries/CMakeFiles/3.15.3/CompilerIdCXX/CompilerIdCXX.exe"
+
+Determining if the CXX compiler works passed with the following output:
+Change Dir: D:/Louise/Documents/Github/handraw/handraw/Binaries/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/15.0/Bin/MSBuild.exe cmTC_c9bc4.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=15.0 /v:m && Microsoft (R) Build Engine version 15.9.21+g9802d43bc3 pour .NET Framework
+Copyright (C) Microsoft Corporation. Tous droits r‚serv‚s.
+
+  Compilateur d'optimisation Microsoft (R) C/C++ versionÿ19.16.27027.1 pour x64
+  Copyright (C) Microsoft Corporation. Tous droits r‚serv‚s.
+  
+  cl /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_c9bc4.dir\Debug\\" /Fd"cmTC_c9bc4.dir\Debug\vc141.pdb" /Gd /TP /errorReport:queue D:\Louise\Documents\Github\handraw\handraw\Binaries\CMakeFiles\CMakeTmp\testCXXCompiler.cxx
+  testCXXCompiler.cxx
+  
+  cmTC_c9bc4.vcxproj -> D:\Louise\Documents\Github\handraw\handraw\Binaries\CMakeFiles\CMakeTmp\Debug\cmTC_c9bc4.exe
+
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: D:/Louise/Documents/Github/handraw/handraw/Binaries/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/15.0/Bin/MSBuild.exe cmTC_934d1.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=15.0 /v:m && Microsoft (R) Build Engine version 15.9.21+g9802d43bc3 pour .NET Framework
+Copyright (C) Microsoft Corporation. Tous droits r‚serv‚s.
+
+  Compilateur d'optimisation Microsoft (R) C/C++ versionÿ19.16.27027.1 pour x64
+  Copyright (C) Microsoft Corporation. Tous droits r‚serv‚s.
+  
+  cl /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_934d1.dir\Debug\\" /Fd"cmTC_934d1.dir\Debug\vc141.pdb" /Gd /TP /errorReport:queue "D:\Programmes\cmake-3.15.3-win64-x64\share\cmake-3.15\Modules\CMakeCXXCompilerABI.cpp"
+  CMakeCXXCompilerABI.cpp
+  
+  cmTC_934d1.vcxproj -> D:\Louise\Documents\Github\handraw\handraw\Binaries\CMakeFiles\CMakeTmp\Debug\cmTC_934d1.exe
+
+
+
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler:  
+Build flags: 
+Id flags:  
+
+The output was:
+0
+Microsoft (R) Build Engine version 15.9.21+g9802d43bc3 pour .NET Framework
+Copyright (C) Microsoft Corporation. Tous droits r‚serv‚s.
+
+La g‚n‚ration a d‚marr‚ 19/11/2019 21:20:57.
+Projet "D:\Louise\Documents\Github\handraw\handraw\Binaries\CMakeFiles\3.15.3\CompilerIdC\CompilerIdC.vcxproj" sur le noud 1 (cibles par d‚faut).
+PrepareForBuild:
+  Cr‚ation du r‚pertoire "Debug\".
+  Cr‚ation du r‚pertoire "Debug\CompilerIdC.tlog\".
+InitializeBuildStatus:
+  Cr‚ation de "Debug\CompilerIdC.tlog\unsuccessfulbuild", car "AlwaysCreate" a ‚t‚ sp‚cifi‚.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\bin\HostX86\x64\CL.exe /c /nologo /W0 /WX- /diagnostics:classic /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc141.pdb" /Gd /TC /FC /errorReport:queue CMakeCCompilerId.c
+  CMakeCCompilerId.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\bin\HostX86\x64\link.exe /ERRORREPORT:QUEUE /OUT:".\CompilerIdC.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\CompilerIdC.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\CompilerIdC.lib" /MACHINE:X64 Debug\CMakeCCompilerId.obj
+  CompilerIdC.vcxproj -> D:\Louise\Documents\Github\handraw\handraw\Binaries\CMakeFiles\3.15.3\CompilerIdC\.\CompilerIdC.exe
+PostBuildEvent:
+  for %%i in (cl.exe) do @echo CMAKE_C_COMPILER=%%~$PATH:i
+  :VCEnd
+  CMAKE_C_COMPILER=C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\bin\Hostx86\x64\cl.exe
+FinalizeBuildStatus:
+  Suppression du fichier "Debug\CompilerIdC.tlog\unsuccessfulbuild".
+  Mise … jour de l'horodatage "Debug\CompilerIdC.tlog\CompilerIdC.lastbuildstate".
+G‚n‚ration du projet "D:\Louise\Documents\Github\handraw\handraw\Binaries\CMakeFiles\3.15.3\CompilerIdC\CompilerIdC.vcxproj" termin‚e (cibles par d‚faut).
+
+La g‚n‚ration a r‚ussi.
+    0 Avertissement(s)
+    0 Erreur(s)
+
+Temps ‚coul‚ 00:00:01.10
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.exe"
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.vcxproj"
+
+The C compiler identification is MSVC, found in "D:/Louise/Documents/Github/handraw/handraw/Binaries/CMakeFiles/3.15.3/CompilerIdC/CompilerIdC.exe"
+
+Determining if the C compiler works passed with the following output:
+Change Dir: D:/Louise/Documents/Github/handraw/handraw/Binaries/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/15.0/Bin/MSBuild.exe cmTC_75db4.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=15.0 /v:m && Microsoft (R) Build Engine version 15.9.21+g9802d43bc3 pour .NET Framework
+Copyright (C) Microsoft Corporation. Tous droits r‚serv‚s.
+
+  Compilateur d'optimisation Microsoft (R) C/C++ versionÿ19.16.27027.1 pour x64
+  Copyright (C) Microsoft Corporation. Tous droits r‚serv‚s.
+  
+  cl /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_75db4.dir\Debug\\" /Fd"cmTC_75db4.dir\Debug\vc141.pdb" /Gd /TC /errorReport:queue D:\Louise\Documents\Github\handraw\handraw\Binaries\CMakeFiles\CMakeTmp\testCCompiler.c
+  testCCompiler.c
+  
+  cmTC_75db4.vcxproj -> D:\Louise\Documents\Github\handraw\handraw\Binaries\CMakeFiles\CMakeTmp\Debug\cmTC_75db4.exe
+
+
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: D:/Louise/Documents/Github/handraw/handraw/Binaries/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/15.0/Bin/MSBuild.exe cmTC_d62dc.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=15.0 /v:m && Microsoft (R) Build Engine version 15.9.21+g9802d43bc3 pour .NET Framework
+Copyright (C) Microsoft Corporation. Tous droits r‚serv‚s.
+
+  Compilateur d'optimisation Microsoft (R) C/C++ versionÿ19.16.27027.1 pour x64
+  Copyright (C) Microsoft Corporation. Tous droits r‚serv‚s.
+  
+  cl /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_d62dc.dir\Debug\\" /Fd"cmTC_d62dc.dir\Debug\vc141.pdb" /Gd /TC /errorReport:queue "D:\Programmes\cmake-3.15.3-win64-x64\share\cmake-3.15\Modules\CMakeCCompilerABI.c"
+  CMakeCCompilerABI.c
+  
+  cmTC_d62dc.vcxproj -> D:\Louise\Documents\Github\handraw\handraw\Binaries\CMakeFiles\CMakeTmp\Debug\cmTC_d62dc.exe
+
+
+

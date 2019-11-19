@@ -14,6 +14,10 @@
 using namespace cv;
 using namespace std;
 
+
+float cap_region_x_begin = 0.5;  
+float cap_region_y_end = 0.8;  
+
 Mat removeBackground(Mat frame, Ptr<BackgroundSubtractor> pBackSub) {
   Mat fgMask, res;
   pBackSub->apply(frame, fgMask);
@@ -56,11 +60,12 @@ int main(int argc, char** argv) {
       break;
     }
 
+	// Create rectangle
+	cv::rectangle(cameraFrame, Point(int(cap_region_x_begin * cameraFrame.size[1]), 0), Point(cameraFrame.size[1], int(cap_region_y_end * cameraFrame.size[0])), (255, 0, 0));
+
     imshow("cam", cameraFrame);
 
-	// Create rectangle
-	//void rectangle(cameraFrame, Point pt1, Point pt2, const Scalar& color, int thickness = 1, int lineType = 8, int shift = 0);
-    
+	
 	hand = removeBackground(cameraFrame, pBackSub);
     imshow("only hand", hand);
     Mat threshImage;

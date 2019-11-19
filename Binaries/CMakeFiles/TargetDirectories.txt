@@ -1,0 +1,3 @@
+D:/Louise/Documents/Github/handraw/handraw/Binaries/CMakeFiles/test.dir
+D:/Louise/Documents/Github/handraw/handraw/Binaries/CMakeFiles/ALL_BUILD.dir
+D:/Louise/Documents/Github/handraw/handraw/Binaries/CMakeFiles/ZERO_CHECK.dir
