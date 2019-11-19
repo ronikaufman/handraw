@@ -58,7 +58,10 @@ int main(int argc, char** argv) {
 
     imshow("cam", cameraFrame);
 
-    hand = removeBackground(cameraFrame, pBackSub);
+	// Create rectangle
+	//void rectangle(cameraFrame, Point pt1, Point pt2, const Scalar& color, int thickness = 1, int lineType = 8, int shift = 0);
+    
+	hand = removeBackground(cameraFrame, pBackSub);
     imshow("only hand", hand);
     Mat threshImage;
     double thresholdValue = 100; // CHANGE?
