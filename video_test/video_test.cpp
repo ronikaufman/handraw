@@ -18,6 +18,8 @@ using namespace std;
 float cap_region_x_begin = 0.5;  
 float cap_region_y_end = 0.8;  
 
+int isBgCaptured = 0;
+
 Mat removeBackground(Mat frame, Ptr<BackgroundSubtractor> pBackSub) {
   Mat fgMask, res;
   pBackSub->apply(frame, fgMask);
@@ -27,6 +29,10 @@ Mat removeBackground(Mat frame, Ptr<BackgroundSubtractor> pBackSub) {
   GaussianBlur(res, res, Size(blurValue, blurValue), 1, 1);
   return res;
 }
+
+//int calculateFingers(Array res, Image drawing) {
+
+//}
 
 int main(int argc, char** argv) {
   VideoCapture stream1;
