@@ -30,9 +30,33 @@ Mat removeBackground(Mat frame, Ptr<BackgroundSubtractor> pBackSub) {
   return res;
 }
 
-//int calculateFingers(Array res, Image drawing) {
+int calculateFingers(vector<vector<Point> > contours) {
+	vector<vector<Point> > hull(contours.size());
+	for (int i = 0; i < contours.size(); i++) {
+		convexHull(Mat(contours[i]), hull[i], false);
+	}
 
-//}
+	int s = hull.size();
+
+//	if (size.height > 3) {
+//		vector<int> defects;
+/*		convexityDefects(res, hull,defects);
+		if (true) {
+			int cnt = 0;
+			for (int i = 0; i <= defects.size(); i = i + 1) {
+				int s;
+				int e;
+				int f;
+				int d;
+				s = defects[i];
+				cout << s << endl;
+			}
+		}
+	}
+
+*/
+	return 0;
+}
 
 int main(int argc, char** argv) {
   VideoCapture stream1;
@@ -52,9 +76,9 @@ int main(int argc, char** argv) {
   //create Background Subtractor objects
   Ptr<BackgroundSubtractor> pBackSub;
   int history = 500; //CHANGE?
-  double varThreshold = 100; // CHANGE?
-  pBackSub = createBackgroundSubtractorMOG2(history, varThreshold);
-  //pBackSub = createBackgroundSubtractorKNN(history, 400);
+  double varThreshold = 400; // CHANGE?
+  //pBackSub = createBackgroundSubtractorMOG2(history, varThreshold);
+  pBackSub = createBackgroundSubtractorKNN(history, varThreshold,true);
 
   Mat cameraFrame, hand;
 
@@ -67,15 +91,20 @@ int main(int argc, char** argv) {
     }
 
 	// Create rectangle
-	cv::rectangle(cameraFrame, Point(int(cap_region_x_begin * cameraFrame.size[1]), 0), Point(cameraFrame.size[1], int(cap_region_y_end * cameraFrame.size[0])), (255, 0, 0));
+	flip(cameraFrame, cameraFrame, 1);
+	rectangle(cameraFrame, Point(int(cap_region_x_begin * cameraFrame.size[1]), 0), Point(cameraFrame.size[1], int(cap_region_y_end * cameraFrame.size[0])), (0, 0, 0));
 
     imshow("cam", cameraFrame);
 
+	// SmallFrame
+	Rect ROI(Point(int(cap_region_x_begin * cameraFrame.size[1]), 0), Point(cameraFrame.size[1], int(cap_region_y_end * cameraFrame.size[0])));
+	Mat smallFrame(cameraFrame, ROI);
 	
-	hand = removeBackground(cameraFrame, pBackSub);
+	hand = removeBackground(smallFrame, pBackSub);
+
     imshow("only hand", hand);
     Mat threshImage;
-    double thresholdValue = 100; // CHANGE?
+    double thresholdValue = 50; // CHANGE?
     threshold(hand, threshImage, thresholdValue, 255, THRESH_BINARY);
     imshow("threshold", threshImage);
 
@@ -86,8 +115,29 @@ int main(int argc, char** argv) {
     Mat contoursImage = Mat::zeros(threshImage.rows, threshImage.cols, CV_8UC3);
     Scalar color(255, 0, 0);
     drawContours(contoursImage, contours, -1, color, 1, 8, hierarchy);
-    imshow("contours", contoursImage);
+   
 
+	//Mat hull;
+	//convexHull(contoursImage, hull);
+	//drawContours(contoursImage, hull, -1, color, 1, 8, hierarchy);
+	
+	
+
+/*	// create a blank image (black image)
+	Mat drawing = Mat::zeros(threshImage.rows, threshImage.cols, CV_8UC3);
+
+	for (int i = 0; i < contours.size(); i++){
+		Scalar color_contours = Scalar(0, 255, 0); // green - color for contours
+		Scalar color = Scalar(255, 0, 0); // blue - color for convex hull
+		// draw ith contour
+		drawContours(drawing, contours, i, color_contours, 1, 8, vector<Vec4i>(), 0, Point());
+		// draw ith convex hull
+		drawContours(drawing, hull, i, color, 1, 8, vector<Vec4i>(), 0, Point());
+  }
+
+//	imshow("contours", contoursImage);
+	imshow("hull", drawing);
+*/
     if (waitKey(30) >= 0)
       break;
   }
