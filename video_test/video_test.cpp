@@ -242,8 +242,8 @@ int main(int argc, char** argv) {
 	//drawContours(contoursImage, hull, -1, color, 1, 8, hierarchy);
 
 
-
-/*	// create a blank image (black image)
+  /*
+  // create a blank image (black image)
 	Mat drawing = Mat::zeros(threshImage.rows, threshImage.cols, CV_8UC3);
 	for (int i = 0; i < contours.size(); i++){
 		Scalar color_contours = Scalar(0, 255, 0); // green - color for contours
@@ -253,9 +253,10 @@ int main(int argc, char** argv) {
 		// draw ith convex hull
 		drawContours(drawing, hull, i, color, 1, 8, vector<Vec4i>(), 0, Point());
   }
-//	imshow("contours", contoursImage);
+  //imshow("contours", contoursImage);
 	imshow("hull", drawing);
-*/
+  */
+
   if (waitKey(30) >= 0)
     break;
   }
