@@ -1,3 +1,8 @@
 ﻿  video_test.cpp
-D:\Louise\Documents\Github\handraw\handraw\video_test\video_test.cpp(19): warning C4305: 'initialisation' : troncation de 'double' à 'float'
+D:\Louise\Documents\Github\handraw\handraw\video_test\video_test.cpp(22): warning C4305: 'initialisation' : troncation de 'double' à 'float'
+D:\Louise\Documents\Github\handraw\handraw\video_test\video_test.cpp(98): warning C4267: '=' : conversion de 'size_t' en 'int', perte possible de données
+D:\Louise\Documents\Github\handraw\handraw\video_test\video_test.cpp(125): warning C4267: 'initialisation' : conversion de 'size_t' en 'int', perte possible de données
+D:\Louise\Documents\Github\handraw\handraw\video_test\video_test.cpp(182): warning C4244: 'initialisation' : conversion de 'int' en 'float', perte possible de données
+D:\Louise\Documents\Github\handraw\handraw\video_test\video_test.cpp(219): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
+d:\louise\documents\github\handraw\handraw\video_test\video_test.cpp(313): warning C4700: variable locale 'i' non initialisée utilisée
   test.vcxproj -> D:\Louise\Documents\Github\handraw\handraw\Binaries\RelWithDebInfo\test.exe
