@@ -12,14 +12,23 @@
 
 #include <iostream>
 #include <math.h>
+#include <list>
+
 using namespace cv;
 using namespace std;
 
-
+// Definition of the Region of Interest
 float cap_region_x_begin = 0.5;
 float cap_region_y_end = 0.8;
 
 int isBgCaptured = 0;
+
+// Definition of the delay for update
+int nbFrames = 15;
+int show = 0;
+vector<int> fingers(nbFrames,-1);
+vector<Point> drawn(nbFrames);
+
 
 Mat removeBackground(Mat frame, Ptr<BackgroundSubtractor> pBackSub) {
   Mat fgMask, res;
@@ -130,8 +139,8 @@ int countFingers(vector<Point> contour, vector<Vec4i> defects) {
       double c = sqrt(pow((ptEnd.x - ptFar.x), 2) + pow((ptEnd.y - ptFar.y), 2));
       double angle = acos((b * b + c * c - a * a) / (2 * b * c));
 
-      int depthThresh = 10000; //CHANGE?
-      if (angle <= M_PI/2 && defects[i].val[3] > depthThresh) {
+      int depthThresh = 5000; //CHANGE?
+      if (angle <= 3.14/2 && defects[i].val[3] > depthThresh) {
         count++;
       }
     }
@@ -169,6 +178,48 @@ void showConvexityDefects(vector<Vec4i> defects, vector<Point> contour, Mat& Ima
   }
 }
 
+Point drawOneFinger(vector<Vec4i> defects, vector<Point> contour, Mat& Image) {
+	float temp = countFingers(contour, defects);
+	Point max(contour[defects[0].val[0]]);
+
+	max.x = max.x + Image.size[1] - int(cap_region_x_begin * Image.size[1]);
+	for (int i = 0; i < defects.size(); i++) {
+
+		int start = defects[i].val[0];
+		Point ptStart(contour[start]);
+		ptStart.x = ptStart.x + Image.size[1] - int(cap_region_x_begin * Image.size[1]);
+		if (max.y > ptStart.y) {
+			max = ptStart;
+		}
+	}
+
+	return max;
+}
+
+float averageFinger(vector<Point> contour, vector<Vec4i> defects ) {
+	int temp = countFingers(contour, defects);
+	int i = 0;
+	while ((fingers[i] != -1) && (i < nbFrames)) {
+		i++;
+	}
+	if (i < nbFrames) {
+		fingers[i] = temp;
+	}
+	else {
+		assert(!fingers.empty());
+		fingers.erase(fingers.begin());
+		fingers.push_back(temp);
+	}
+	float average = 0;
+	for (int i = 0; i < nbFrames; i++) {
+		if (fingers[i] != -1) {
+			average = average + fingers[i];
+		}
+	}
+	average = average / nbFrames*1.0;
+	return average;
+}
+
 int main(int argc, char** argv) {
   VideoCapture stream1;
   if (argc == 1) {
@@ -193,7 +244,7 @@ int main(int argc, char** argv) {
 
   Mat cameraFrame, hand;
 
-  //unconditional loop
+  // Unconditional loop
   while (true) {
     stream1.read(cameraFrame);
     if (cameraFrame.empty()) {
@@ -205,45 +256,87 @@ int main(int argc, char** argv) {
 	flip(cameraFrame, cameraFrame, 1);
 	rectangle(cameraFrame, Point(int(cap_region_x_begin * cameraFrame.size[1]), 0), Point(cameraFrame.size[1], int(cap_region_y_end * cameraFrame.size[0])), (0, 0, 0));
 
-  imshow("cam", cameraFrame);
-
-	// SmallFrame
+	// Create SmallFrame
 	Rect ROI(Point(int(cap_region_x_begin * cameraFrame.size[1]), 0), Point(cameraFrame.size[1], int(cap_region_y_end * cameraFrame.size[0])));
 	Mat smallFrame(cameraFrame, ROI);
 
 	hand = removeBackground(smallFrame, pBackSub);
 
-  imshow("only hand", hand);
-  Mat threshImage;
-  double thresholdValue = 50; // CHANGE?
-  threshold(hand, threshImage, thresholdValue, 255, THRESH_BINARY);
-  imshow("threshold", threshImage);
 
-  vector<vector<Point> > contours;
-  vector<Vec4i> hierarchy;
-  findContours(threshImage, contours, hierarchy, RETR_LIST, CHAIN_APPROX_SIMPLE);
+	// Create Threshold image
+	imshow("only hand", hand);
+	Mat threshImage;
+	double thresholdValue = 40; // CHANGE?
+	threshold(hand, threshImage, thresholdValue, 255, THRESH_BINARY);
+	imshow("threshold", threshImage);
 
-  Mat contoursImage = Mat::zeros(threshImage.rows, threshImage.cols, CV_8UC3);
-  Scalar color(255, 0, 0);
-  drawContours(contoursImage, contours, -1, color, 1, 8, hierarchy);
+	// Create contours & defects
+	vector<vector<Point> > contours;
+	vector<Vec4i> hierarchy;
+	findContours(threshImage, contours, hierarchy, RETR_LIST, CHAIN_APPROX_SIMPLE);
 
-  int maxContour = getMaxContour(contours);
-  vector<Vec4i> defects = getDefects(contours[maxContour]);
-  showConvexityHull(contours, maxContour, hierarchy, contoursImage);
-  showConvexityDefects(defects, contours[maxContour], contoursImage);
+	Mat contoursImage = Mat::zeros(threshImage.rows, threshImage.cols, CV_8UC3);
+	Scalar color(255, 0, 0);
+	drawContours(contoursImage, contours, -1, color, 1, 8, hierarchy);
 
-  imshow("contours + defects", contoursImage);
+	int maxContour = getMaxContour(contours);
+	vector<Vec4i> defects = getDefects(contours[maxContour]);
+	showConvexityHull(contours, maxContour, hierarchy, contoursImage);
+	showConvexityDefects(defects, contours[maxContour], contoursImage);
 
-  int nFingers = countFingers(contours[maxContour], defects);
-  cout << nFingers << endl;
+	// Count fingers
+	int nFingers = countFingers(contours[maxContour], defects);
+
+	// Calculate average number of fingers (nbFrames frames)
+	float average = averageFinger(contours[maxContour], defects);
+
+
+	// Draw with one finger
+	if (defects.size() > 0) {
+		if ((average < 1.6) && (average > 0.4)) {
+			Point point = drawOneFinger(defects, contours[maxContour], cameraFrame);
+			circle(cameraFrame, point, 3, CV_RGB(0, 0, 0), 3, 8);
+			if (drawn.size() < nbFrames) {
+				drawn.push_back(point);
+			}
+			else {
+				assert(!drawn.empty());
+				drawn.erase(drawn.begin());
+				drawn.push_back(point);
+			}
+
+			// Dessiner un autre point de drawn c'est possible ...
+			circle(cameraFrame, drawn[0], 3, CV_RGB(0, 0, 0), 3, 8);
+
+			// Mais dessiner tous les points de drawn c'est pas possible ??
+			for (int i; i < drawn.size(); i++) {
+				circle(cameraFrame, drawn[i], 3, CV_RGB(0, 0, 0), 3, 8);
+			}
+		}
+	}
+
+	// Plot
+	imshow("contours + defects", contoursImage);
+	imshow("cam", cameraFrame);
+
+	//cout << nFingers << endl;
+
+	if (show = 3*nbFrames) {
+		show = 0;
+		cout << "Average :" << average << endl;
+	}
+	else {
+		show++;
+	}
+
 
 	//Mat hull;
 	//convexHull(contoursImage, hull);
 	//drawContours(contoursImage, hull, -1, color, 1, 8, hierarchy);
 
 
-  /*
-  // create a blank image (black image)
+	/*
+	// create a blank image (black image)
 	Mat drawing = Mat::zeros(threshImage.rows, threshImage.cols, CV_8UC3);
 	for (int i = 0; i < contours.size(); i++){
 		Scalar color_contours = Scalar(0, 255, 0); // green - color for contours
@@ -252,13 +345,13 @@ int main(int argc, char** argv) {
 		drawContours(drawing, contours, i, color_contours, 1, 8, vector<Vec4i>(), 0, Point());
 		// draw ith convex hull
 		drawContours(drawing, hull, i, color, 1, 8, vector<Vec4i>(), 0, Point());
-  }
-  //imshow("contours", contoursImage);
+	}
+	//imshow("contours", contoursImage);
 	imshow("hull", drawing);
-  */
+	*/
 
-  if (waitKey(30) >= 0)
-    break;
+	if (waitKey(30) >= 0)
+	break;
   }
 
   // Closes all the windows
