@@ -13,6 +13,7 @@
 #include <iostream>
 #include <math.h>
 #include <list>
+#include <stdlib.h>
 
 using namespace cv;
 using namespace std;
@@ -40,62 +41,14 @@ Mat removeBackground(Mat frame, Ptr<BackgroundSubtractor> pBackSub) {
   return res;
 }
 
-// DEPRECATED :(, DON'T USE!
-int calculateFingers(vector<vector<Point> > contours) {
-  vector<vector<Point> > hull(contours.size());
-  vector<vector<int> > hullsI(contours.size()); // Indices to contour points
-  vector<vector<Vec4i> > defects(contours.size());
-
-  for (int i = 0; i < contours.size(); i++) {
-    convexHull(contours[i], hull[i], false);
-    convexHull(contours[i], hullsI[i], false);
-    if (hullsI[i].size() > 3) {
-        convexityDefects(contours[i], hullsI[i], defects[i]);
-    }
-  }
-
-  for (int i = 0; i < defects.size(); i++) {
-    //cout << defects[i] << endl;
-  }
-
-
-  /*
-	vector<vector<Point> > hull(contours.size());
-	for (int i = 0; i < contours.size(); i++) {
-		convexHull(Mat(contours[i]), hull[i], false);
-	}
-
-	int s = hull.size();
-
-	if (s > 3) {
-		//vector<int> defects;
-    vector<vector<Vec4i>> defects;
-		convexityDefects(contours, hull, defects);
-
-		if (true) {
-			int cnt = 0;
-			for (int i = 0; i <= defects.size(); i = i + 1) {
-				int s;
-				int e;
-				int f;
-				int d;
-				s = defects[i];
-				cout << s << endl;
-			}
-		}
-	}*/
-
-	return 0;
-}
-
-// returns index of max contour
+// returns index of contour of max area
 
 int getMaxContour(vector<vector<Point> > contours) {
   int index = -1;
   int maxSize = 0;
   for (int i = 0; i < contours.size(); i++) {
-    if (contours[i].size() > maxSize) {
-      maxSize = contours[i].size();
+    if (contourArea(contours[i]) > maxSize) {
+      maxSize = contourArea(contours[i]);
       index = i;
     }
   }
@@ -134,13 +87,16 @@ int countFingers(vector<Point> contour, vector<Vec4i> defects) {
       int far = defects[i].val[2];
       Point ptFar(contour[far]);
 
-      double a = sqrt(pow((ptEnd.x - ptStart.x), 2) + pow((ptEnd.y - ptStart.y), 2));
-      double b = sqrt(pow((ptFar.x - ptStart.x), 2) + pow((ptFar.y - ptStart.y), 2));
-      double c = sqrt(pow((ptEnd.x - ptFar.x), 2) + pow((ptEnd.y - ptFar.y), 2));
+      double a = sqrt(pow((ptEnd.x - ptStart.x), 2)
+                    + pow((ptEnd.y - ptStart.y), 2));
+      double b = sqrt(pow((ptFar.x - ptStart.x), 2)
+                    + pow((ptFar.y - ptStart.y), 2));
+      double c = sqrt(pow((ptEnd.x - ptFar.x), 2)
+                    + pow((ptEnd.y - ptFar.y), 2));
       double angle = acos((b * b + c * c - a * a) / (2 * b * c));
 
       int depthThresh = 5000; //CHANGE?
-      if (angle <= 3.14/2 && defects[i].val[3] > depthThresh) {
+      if (angle <= 3.14159/2 && defects[i].val[3] > depthThresh) {
         count++;
       }
     }
@@ -178,13 +134,17 @@ void showConvexityDefects(vector<Vec4i> defects, vector<Point> contour, Mat& Ima
   }
 }
 
-Point drawOneFinger(vector<Vec4i> defects, vector<Point> contour, Mat& Image) {
-	float temp = countFingers(contour, defects);
-	Point max(contour[defects[0].val[0]]);
+// Returns the tip of the finger (the furthest from the contour's centroid)
+Point getFingertip(vector<Vec4i> defects, vector<Point> contour, Mat& Image, int nFingers) {
+  Moments m = moments(contour);
+	Point centroid(m.m10/m.m00, m.m01/m.m00);
 
+	Point max(contour[defects[0].val[0]]);
+  double maxDist = norm(max - centroid);
+
+  /*
 	max.x = max.x + Image.size[1] - int(cap_region_x_begin * Image.size[1]);
 	for (int i = 0; i < defects.size(); i++) {
-
 		int start = defects[i].val[0];
 		Point ptStart(contour[start]);
 		ptStart.x = ptStart.x + Image.size[1] - int(cap_region_x_begin * Image.size[1]);
@@ -192,23 +152,34 @@ Point drawOneFinger(vector<Vec4i> defects, vector<Point> contour, Mat& Image) {
 			max = ptStart;
 		}
 	}
+  */
 
+  for (int i = 1; i < defects.size(); i++) {
+    int start = defects[i].val[0];
+    Point pt(contour[start]);
+    double dist = norm(pt - centroid);
+    if (dist > maxDist) {
+      max = pt;
+      maxDist = dist;
+    }
+  }
+
+  max.x = max.x + Image.size[1] - int(cap_region_x_begin * Image.size[1]);
 	return max;
 }
 
-float averageFinger(vector<Point> contour, vector<Vec4i> defects ) {
-	int temp = countFingers(contour, defects);
+float averageFinger(vector<Point> contour, vector<Vec4i> defects, int nFingers) {
 	int i = 0;
 	while ((fingers[i] != -1) && (i < nbFrames)) {
 		i++;
 	}
 	if (i < nbFrames) {
-		fingers[i] = temp;
+		fingers[i] = nFingers;
 	}
 	else {
 		assert(!fingers.empty());
 		fingers.erase(fingers.begin());
-		fingers.push_back(temp);
+		fingers.push_back(nFingers);
 	}
 	float average = 0;
 	for (int i = 0; i < nbFrames; i++) {
@@ -235,7 +206,7 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  //create Background Subtractor objects
+  // create Background Subtractor object
   Ptr<BackgroundSubtractor> pBackSub;
   int history = 500; //CHANGE?
   double varThreshold = 400; // CHANGE?
@@ -254,14 +225,18 @@ int main(int argc, char** argv) {
 
 	// Create rectangle
 	flip(cameraFrame, cameraFrame, 1);
-	rectangle(cameraFrame, Point(int(cap_region_x_begin * cameraFrame.size[1]), 0), Point(cameraFrame.size[1], int(cap_region_y_end * cameraFrame.size[0])), (0, 0, 0));
+	rectangle(cameraFrame,
+            Point(int(cap_region_x_begin * cameraFrame.size[1]), 0),
+            Point(cameraFrame.size[1], int(cap_region_y_end * cameraFrame.size[0])),
+            (0, 0, 0),
+            5);
 
-	// Create SmallFrame
-	Rect ROI(Point(int(cap_region_x_begin * cameraFrame.size[1]), 0), Point(cameraFrame.size[1], int(cap_region_y_end * cameraFrame.size[0])));
+	// create smallFrame
+	Rect ROI(Point(int(cap_region_x_begin * cameraFrame.size[1]), 0),
+           Point(cameraFrame.size[1], int(cap_region_y_end * cameraFrame.size[0])));
 	Mat smallFrame(cameraFrame, ROI);
 
 	hand = removeBackground(smallFrame, pBackSub);
-
 
 	// Create Threshold image
 	imshow("only hand", hand);
@@ -288,14 +263,16 @@ int main(int argc, char** argv) {
 	int nFingers = countFingers(contours[maxContour], defects);
 
 	// Calculate average number of fingers (nbFrames frames)
-	float average = averageFinger(contours[maxContour], defects);
+	float average = averageFinger(contours[maxContour], defects, nFingers);
 
+  float margin = 0.6;
 
-	// Draw with one finger
+	// Actions
 	if (defects.size() > 0) {
-		if ((average < 1.6) && (average > 0.4)) {
-			Point point = drawOneFinger(defects, contours[maxContour], cameraFrame);
-			circle(cameraFrame, point, 3, CV_RGB(0, 0, 0), 3, 8);
+		if (abs(average - 1) < margin) {
+      // one finger up -> draw with the point
+			Point point = getFingertip(defects, contours[maxContour], cameraFrame, nFingers);
+			//circle(cameraFrame, point, 3, CV_RGB(0, 0, 0), 3, 8);
 			if (drawn.size() < nbFrames) {
 				drawn.push_back(point);
 			}
@@ -305,14 +282,16 @@ int main(int argc, char** argv) {
 				drawn.push_back(point);
 			}
 
-			// Dessiner un autre point de drawn c'est possible ...
-			circle(cameraFrame, drawn[0], 3, CV_RGB(0, 0, 0), 3, 8);
-
-			// Mais dessiner tous les points de drawn c'est pas possible ??
-			for (int i; i < drawn.size(); i++) {
+			for (int i = 0; i < drawn.size(); i++) {
 				circle(cameraFrame, drawn[i], 3, CV_RGB(0, 0, 0), 3, 8);
 			}
-		}
+		} else if (abs(average - 2) < margin) {
+      // two fingers up -> erase with these fingers
+      // TO DO
+    } else if (abs(average - 5) < margin) {
+      // five fingers up -> erase
+      drawn.clear();
+    }
 	}
 
 	// Plot
@@ -321,37 +300,16 @@ int main(int argc, char** argv) {
 
 	//cout << nFingers << endl;
 
-	if (show = 3*nbFrames) {
+	if (show == 3*nbFrames) {
 		show = 0;
-		cout << "Average :" << average << endl;
+		cout << "Average: " << average << endl;
 	}
 	else {
 		show++;
 	}
 
+	if (waitKey(30) >= 0) break;
 
-	//Mat hull;
-	//convexHull(contoursImage, hull);
-	//drawContours(contoursImage, hull, -1, color, 1, 8, hierarchy);
-
-
-	/*
-	// create a blank image (black image)
-	Mat drawing = Mat::zeros(threshImage.rows, threshImage.cols, CV_8UC3);
-	for (int i = 0; i < contours.size(); i++){
-		Scalar color_contours = Scalar(0, 255, 0); // green - color for contours
-		Scalar color = Scalar(255, 0, 0); // blue - color for convex hull
-		// draw ith contour
-		drawContours(drawing, contours, i, color_contours, 1, 8, vector<Vec4i>(), 0, Point());
-		// draw ith convex hull
-		drawContours(drawing, hull, i, color, 1, 8, vector<Vec4i>(), 0, Point());
-	}
-	//imshow("contours", contoursImage);
-	imshow("hull", drawing);
-	*/
-
-	if (waitKey(30) >= 0)
-	break;
   }
 
   // Closes all the windows
