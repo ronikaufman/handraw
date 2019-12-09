@@ -26,7 +26,7 @@ int isBgCaptured = 0;
 
 // Definition of the delay for update
 int nbFrames = 15;
-int show = 0;
+int countFrames = 0;
 vector<int> fingers(nbFrames,-1);
 vector<Point> drawn(nbFrames);
 
@@ -139,8 +139,9 @@ Point getFingertip(vector<Vec4i> defects, vector<Point> contour, Mat& Image, int
   Moments m = moments(contour);
 	Point centroid(m.m10/m.m00, m.m01/m.m00);
 
-	Point max(contour[defects[0].val[0]]);
-  double maxDist = norm(max - centroid);
+	//Point max(contour[defects[0].val[0]]);
+  Point max;
+  double maxDist = 0;
 
   /*
 	max.x = max.x + Image.size[1] - int(cap_region_x_begin * Image.size[1]);
@@ -154,11 +155,11 @@ Point getFingertip(vector<Vec4i> defects, vector<Point> contour, Mat& Image, int
 	}
   */
 
-  for (int i = 1; i < defects.size(); i++) {
+  for (int i = 0; i < defects.size(); i++) {
     int start = defects[i].val[0];
     Point pt(contour[start]);
     double dist = norm(pt - centroid);
-    if (dist > maxDist) {
+    if (dist > maxDist && pt.y < centroid.y) {
       max = pt;
       maxDist = dist;
     }
@@ -228,8 +229,8 @@ int main(int argc, char** argv) {
 	rectangle(cameraFrame,
             Point(int(cap_region_x_begin * cameraFrame.size[1]), 0),
             Point(cameraFrame.size[1], int(cap_region_y_end * cameraFrame.size[0])),
-            (0, 0, 0),
-            5);
+            Scalar(0, 0, 0),
+            3);
 
 	// create smallFrame
 	Rect ROI(Point(int(cap_region_x_begin * cameraFrame.size[1]), 0),
@@ -300,13 +301,11 @@ int main(int argc, char** argv) {
 
 	//cout << nFingers << endl;
 
-	if (show == 3*nbFrames) {
-		show = 0;
+	if (countFrames % nbFrames == 0) {
 		cout << "Average: " << average << endl;
 	}
-	else {
-		show++;
-	}
+
+  countFrames++;
 
 	if (waitKey(30) >= 0) break;
 
