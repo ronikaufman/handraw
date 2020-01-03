@@ -1,33 +1,42 @@
-#include <opencv2/opencv.hpp>
-
 #include <iostream>
 #include <math.h>
 #include <list>
 #include <stdlib.h>
 
+#include <opencv2/opencv.hpp>
+
 using namespace cv;
 using namespace std;
 
-// Definition of the Region of Interest
+
+// ********** global variables **********
+
+
+// definition of the drawing rectangle
 float cap_region_x_begin = 0.5;
 float cap_region_y_end = 0.8;
 
-int isBgCaptured = 0; // useless, delete?
-
-// Definition of the delay for update
+// delay for update of the number of
 int nbFrames = 15;
-int countFrames = 0;
 
-// stroage for the number of shown fingers in the last nbFrames frames
-vector<int> fingers(nbFrames,-1);
+// storage for the number of shown fingers in the last nbFrames frames
+vector<int> fingers(nbFrames, -1);
 
 // drawn points
-vector<Point> drawn(nbFrames);
+vector<Point> drawn(0);
+
+
+// ********** functions **********
 
 
 // updates the background subtractor and returns the extracted hand frame
 
-Mat removeBackground(Mat frame, Ptr<BackgroundSubtractor> pBackSub) {
+Mat removeBackground(Mat cameraFrame, Ptr<BackgroundSubtractor> pBackSub) {
+  Rect ROI(Point(int(cap_region_x_begin * cameraFrame.size[1]), 0),
+           Point(cameraFrame.size[1],
+                 int(cap_region_y_end * cameraFrame.size[0])));
+	Mat frame(cameraFrame, ROI);
+
   Mat fgMask, res;
   pBackSub->apply(frame, fgMask, -1.0);
   bitwise_and(frame, frame, res, fgMask);
@@ -208,8 +217,8 @@ float averageFinger(vector<Point> contour,
 }
 
 
-
 // ********** main **********
+
 
 int main(int argc, char** argv) {
   VideoCapture stream1;
@@ -235,6 +244,8 @@ int main(int argc, char** argv) {
 
   Mat cameraFrame, hand;
 
+  int countFrames = 0;
+
   // Unconditional loop
   while (true) {
     stream1.read(cameraFrame);
@@ -243,118 +254,115 @@ int main(int argc, char** argv) {
       break;
     }
 
-	// Create rectangle
-	flip(cameraFrame, cameraFrame, 1);
-	rectangle(cameraFrame,
-            Point(int(cap_region_x_begin * cameraFrame.size[1]), 0),
-            Point(cameraFrame.size[1],
-                  int(cap_region_y_end * cameraFrame.size[0])),
-            Scalar(0, 0, 0),
-            3);
+  	flip(cameraFrame, cameraFrame, 1);
 
-	// Create smallFrame
-	Rect ROI(Point(int(cap_region_x_begin * cameraFrame.size[1]), 0),
-           Point(cameraFrame.size[1],
-                 int(cap_region_y_end * cameraFrame.size[0])));
-	Mat smallFrame(cameraFrame, ROI);
+  	// Create drawing zone rectangle
+  	rectangle(cameraFrame,
+              Point(int(cap_region_x_begin * cameraFrame.size[1]), 0),
+              Point(cameraFrame.size[1],
+                    int(cap_region_y_end * cameraFrame.size[0])),
+              Scalar(0, 0, 0),
+              3);
 
-	hand = removeBackground(smallFrame, pBackSub);
+    // Identify hand
+  	hand = removeBackground(cameraFrame, pBackSub);
+  	imshow("only hand", hand); // for testing
 
-	// Create Threshold image
-	imshow("only hand", hand);
-	Mat threshImage;
-	double thresholdValue = 60; // CHANGE?
-	threshold(hand, threshImage, thresholdValue, 255, THRESH_BINARY);
-	dilate(threshImage,
-         threshImage,
-         Mat(),
-         Point(-1, -1),
-         2,
-         BORDER_CONSTANT,
-         morphologyDefaultBorderValue());
-	imshow("threshold", threshImage);
+  	// Create Threshold image
+  	Mat threshImage;
+  	double thresholdValue = 60; // CHANGE?
+  	threshold(hand, threshImage, thresholdValue, 255, THRESH_BINARY);
+  	dilate(threshImage,
+           threshImage,
+           Mat(),
+           Point(-1, -1),
+           2,
+           BORDER_CONSTANT,
+           morphologyDefaultBorderValue());
+  	imshow("threshold", threshImage); // for testing
 
-	// Create contours & defects
-	vector<vector<Point> > contours;
-	vector<Vec4i> hierarchy;
-	findContours(threshImage,
-               contours,
-               hierarchy,
-               RETR_LIST,
-               CHAIN_APPROX_SIMPLE);
+  	// Create contours & defects
+  	vector<vector<Point> > contours;
+  	vector<Vec4i> hierarchy;
+  	findContours(threshImage,
+                 contours,
+                 hierarchy,
+                 RETR_LIST,
+                 CHAIN_APPROX_SIMPLE);
 
-	Mat contoursImage = Mat::zeros(threshImage.rows, threshImage.cols, CV_8UC3);
-	Scalar color(255, 0, 0);
-	drawContours(contoursImage, contours, -1, color, 1, 8, hierarchy);
+    // for testing:
+  	Mat contoursImage = Mat::zeros(threshImage.rows, threshImage.cols, CV_8UC3);
+  	Scalar color(255, 0, 0);
+  	drawContours(contoursImage, contours, -1, color, 1, 8, hierarchy);
 
-	int maxContour = getMaxContour(contours);
-  float average = -1;
+  	int maxContour = getMaxContour(contours);
+    float average = -1;
 
-	if (maxContour != -1) {
+  	if (maxContour != -1) {
 
-  	vector<Vec4i> defects = getDefects(contours[maxContour]);
-  	showConvexityHull(contours, maxContour, hierarchy, contoursImage);
-  	showConvexityDefects(defects, contours[maxContour], contoursImage);
+    	vector<Vec4i> defects = getDefects(contours[maxContour]);
+    	showConvexityHull(contours, maxContour, hierarchy, contoursImage);
+    	showConvexityDefects(defects, contours[maxContour], contoursImage);
 
-  	// Count fingers
-  	int nFingers = countFingers(contours[maxContour], defects);
+    	// Count fingers
+    	int nFingers = countFingers(contours[maxContour], defects);
 
-  	// Calculate average number of fingers (nbFrames frames)
-  	average = averageFinger(contours[maxContour], defects, nFingers);
+    	// Calculate average number of fingers (nbFrames frames)
+    	average = averageFinger(contours[maxContour], defects, nFingers);
 
-    float margin = 0.5;
+      float margin = 0.5;
 
-  	// Actions
-  	if (defects.size() > 0) {
-  		if (abs(average - 1) < margin) {
-        // One finger up -> draw with the point
-  			Point point = getFingertip(defects,
-                                   contours[maxContour],
-                                   cameraFrame,
-                                   nFingers);
-  			//circle(cameraFrame, point, 3, CV_RGB(0, 0, 0), 3, 8);
-  			/*if (drawn.size() < nbFrames) {
-  				drawn.push_back(point);
-  			}
-  			else {
-  				assert(!drawn.empty());
-  				drawn.erase(drawn.begin());
-  				drawn.push_back(point);
-  			}*/
-  			drawn.push_back(point);
+    	// Actions
+    	if (defects.size() > 0) {
+    		if (abs(average - 1) < margin) {
+          // One finger up -> draw with the point
+    			Point point = getFingertip(defects,
+                                     contours[maxContour],
+                                     cameraFrame,
+                                     nFingers);
+    			//circle(cameraFrame, point, 3, CV_RGB(0, 0, 0), 3, 8);
+    			/*if (drawn.size() < nbFrames) {
+    				drawn.push_back(point);
+    			}
+    			else {
+    				assert(!drawn.empty());
+    				drawn.erase(drawn.begin());
+    				drawn.push_back(point);
+    			}*/
+    			drawn.push_back(point);
 
-  		} else if (abs(average - 2) < margin) {
-        // Two fingers up -> erase with these fingers
-        // TO DO
-      } else if (abs(average - 5) < margin) {
-        // Five fingers up -> erase
-        drawn.clear();
-      }
+    		} else if (abs(average - 2) < margin) {
+          // Two fingers up -> erase with these fingers
+          // TO DO
+        } else if (abs(average - 5) < margin) {
+          // Five fingers up -> erase
+          drawn.clear();
+        }
+    	}
+
+    	// Plot
+    	if ((defects.size() > 0) &&  !drawn.empty() ) {
+    		for (int i = 0; i < drawn.size(); i++) {
+    			circle(cameraFrame, drawn[i], 2, CV_RGB(0, 0, 0), 3, 8);
+    		}
+    	}
+
+    }
+
+  	imshow("contours + defects", contoursImage);
+  	imshow("cam", cameraFrame);
+
+  	if (countFrames % nbFrames == 0) {
+  		cout << "Average: " << average << endl;
   	}
 
-  	// Plot
-  	if ((defects.size() > 0) &&  !drawn.empty() ) {
-  		for (int i = 0; i < drawn.size(); i++) {
-  			circle(cameraFrame, drawn[i], 2, CV_RGB(0, 0, 0), 3, 8);
-  		}
-  	}
+    countFrames++;
 
-  }
+  	if (waitKey(30) >= 0) break;
 
-	imshow("contours + defects", contoursImage);
-	imshow("cam", cameraFrame);
-
-	if (countFrames % nbFrames == 0) {
-		cout << "Average: " << average << endl;
-	}
-
-  countFrames++;
-
-	if (waitKey(30) >= 0) break;
-
-  }
+  } // end of while
 
   // Closes all the windows
   destroyAllWindows();
   return 0;
-}
+} // end of main
