@@ -33,7 +33,7 @@ vector<Point> drawn(nbFrames);
 
 Mat removeBackground(Mat frame, Ptr<BackgroundSubtractor> pBackSub) {
   Mat fgMask, res;
-  pBackSub->apply(frame, fgMask);
+  pBackSub->apply(frame, fgMask,-1.0);
   bitwise_and(frame, frame, res, fgMask);
   int blurValue = 41;
   cvtColor(res, res, COLOR_BGR2GRAY);
@@ -207,7 +207,7 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  // create Background Subtractor object
+  // Create Background Subtractor object
   Ptr<BackgroundSubtractor> pBackSub;
   int history = 500; //CHANGE?
   double varThreshold = 400; // CHANGE?
@@ -232,7 +232,7 @@ int main(int argc, char** argv) {
             Scalar(0, 0, 0),
             3);
 
-	// create smallFrame
+	// Create smallFrame
 	Rect ROI(Point(int(cap_region_x_begin * cameraFrame.size[1]), 0),
            Point(cameraFrame.size[1], int(cap_region_y_end * cameraFrame.size[0])));
 	Mat smallFrame(cameraFrame, ROI);
@@ -242,8 +242,9 @@ int main(int argc, char** argv) {
 	// Create Threshold image
 	imshow("only hand", hand);
 	Mat threshImage;
-	double thresholdValue = 40; // CHANGE?
+	double thresholdValue = 60; // CHANGE?
 	threshold(hand, threshImage, thresholdValue, 255, THRESH_BINARY);
+	dilate(threshImage, threshImage, Mat(), Point(-1, -1), 2, BORDER_CONSTANT, morphologyDefaultBorderValue());
 	imshow("threshold", threshImage);
 
 	// Create contours & defects
@@ -266,12 +267,12 @@ int main(int argc, char** argv) {
 	// Calculate average number of fingers (nbFrames frames)
 	float average = averageFinger(contours[maxContour], defects, nFingers);
 
-  float margin = 0.6;
+  float margin = 0.5;
 
 	// Actions
 	if (defects.size() > 0) {
 		if (abs(average - 1) < margin) {
-      // one finger up -> draw with the point
+      // One finger up -> draw with the point
 			Point point = getFingertip(defects, contours[maxContour], cameraFrame, nFingers);
 			//circle(cameraFrame, point, 3, CV_RGB(0, 0, 0), 3, 8);
 			if (drawn.size() < nbFrames) {
@@ -282,22 +283,26 @@ int main(int argc, char** argv) {
 				drawn.erase(drawn.begin());
 				drawn.push_back(point);
 			}
+			//drawn.push_back(point);
 
-			for (int i = 0; i < drawn.size(); i++) {
-				circle(cameraFrame, drawn[i], 3, CV_RGB(0, 0, 0), 3, 8);
-			}
 		} else if (abs(average - 2) < margin) {
-      // two fingers up -> erase with these fingers
+      // Two fingers up -> erase with these fingers
       // TO DO
     } else if (abs(average - 5) < margin) {
-      // five fingers up -> erase
+      // Five fingers up -> erase
       drawn.clear();
     }
 	}
 
 	// Plot
+	/*if ((defects.size() > 0) &&  !drawn.empty() ) {
+		for (int i = 0; i < drawn.size(); i++) {
+			circle(cameraFrame, drawn[i], 2, CV_RGB(0, 0, 0), 3, 8);
+		}
+	}*/
 	imshow("contours + defects", contoursImage);
 	imshow("cam", cameraFrame);
+
 
 	//cout << nFingers << endl;
 
