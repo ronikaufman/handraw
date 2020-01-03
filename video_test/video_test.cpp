@@ -1,13 +1,3 @@
-/*#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include "opencv2/opencv.hpp"
-#include "opencv2/imgcodecs.hpp"
-#include "opencv2/imgproc.hpp"
-#include "opencv2/videoio.hpp"
-#include <opencv2/highgui.hpp>
-#include <opencv2/video.hpp>
-#include <opencv2/video/background_segm.hpp>*/
-
 #include <opencv2/opencv.hpp>
 
 #include <iostream>
@@ -22,18 +12,24 @@ using namespace std;
 float cap_region_x_begin = 0.5;
 float cap_region_y_end = 0.8;
 
-int isBgCaptured = 0;
+int isBgCaptured = 0; // useless, delete?
 
 // Definition of the delay for update
 int nbFrames = 15;
 int countFrames = 0;
+
+// stroage for the number of shown fingers in the last nbFrames frames
 vector<int> fingers(nbFrames,-1);
+
+// drawn points
 vector<Point> drawn(nbFrames);
 
 
+// updates the background subtractor and returns the extracted hand frame
+
 Mat removeBackground(Mat frame, Ptr<BackgroundSubtractor> pBackSub) {
   Mat fgMask, res;
-  pBackSub->apply(frame, fgMask,-1.0);
+  pBackSub->apply(frame, fgMask, -1.0);
   bitwise_and(frame, frame, res, fgMask);
   int blurValue = 41;
   cvtColor(res, res, COLOR_BGR2GRAY);
@@ -105,8 +101,13 @@ int countFingers(vector<Point> contour, vector<Vec4i> defects) {
 }
 
 // show convexity hulls (computes it again)
+// only for testing
 
-void showConvexityHull(vector<vector<Point> > contours, int maxContour, vector<Vec4i> hierarchy, Mat& Image) {
+void showConvexityHull(vector<vector<Point> > contours,
+                       int maxContour,
+                       vector<Vec4i> hierarchy,
+                       Mat& Image) {
+
   vector<vector<Point> >hull(contours.size());
   for (int i = 0; i < contours.size(); i++) {
     convexHull(Mat(contours[i]), hull[i], false);
@@ -116,8 +117,12 @@ void showConvexityHull(vector<vector<Point> > contours, int maxContour, vector<V
 
 
 // show convexity getDefects
+// only for testing
 
-void showConvexityDefects(vector<Vec4i> defects, vector<Point> contour, Mat& Image) {
+void showConvexityDefects(vector<Vec4i> defects,
+                          vector<Point> contour,
+                          Mat& Image) {
+
   for (int i = 0; i < defects.size(); i++) {
     int start = defects[i].val[0];
     Point ptStart(contour[start]);
@@ -134,8 +139,13 @@ void showConvexityDefects(vector<Vec4i> defects, vector<Point> contour, Mat& Ima
   }
 }
 
-// Returns the tip of the finger (the furthest from the contour's centroid)
-Point getFingertip(vector<Vec4i> defects, vector<Point> contour, Mat& Image, int nFingers) {
+// returns the tip of the finger (the furthest from the contour's centroid)
+
+Point getFingertip(vector<Vec4i> defects,
+                   vector<Point> contour,
+                   Mat& Image,
+                   int nFingers) {
+
   Moments m = moments(contour);
 	Point centroid(m.m10/m.m00, m.m01/m.m00);
 
@@ -169,7 +179,12 @@ Point getFingertip(vector<Vec4i> defects, vector<Point> contour, Mat& Image, int
 	return max;
 }
 
-float averageFinger(vector<Point> contour, vector<Vec4i> defects, int nFingers) {
+// returns the number of fingers shown
+// (an average on the last nbFrames, actually)
+
+float averageFinger(vector<Point> contour,
+                    vector<Vec4i> defects,
+                    int nFingers) {
 	int i = 0;
 	while ((fingers[i] != -1) && (i < nbFrames)) {
 		i++;
@@ -191,6 +206,10 @@ float averageFinger(vector<Point> contour, vector<Vec4i> defects, int nFingers) 
 	average = average / nbFrames*1.0;
 	return average;
 }
+
+
+
+// ********** main **********
 
 int main(int argc, char** argv) {
   VideoCapture stream1;
@@ -228,13 +247,15 @@ int main(int argc, char** argv) {
 	flip(cameraFrame, cameraFrame, 1);
 	rectangle(cameraFrame,
             Point(int(cap_region_x_begin * cameraFrame.size[1]), 0),
-            Point(cameraFrame.size[1], int(cap_region_y_end * cameraFrame.size[0])),
+            Point(cameraFrame.size[1],
+                  int(cap_region_y_end * cameraFrame.size[0])),
             Scalar(0, 0, 0),
             3);
 
 	// Create smallFrame
 	Rect ROI(Point(int(cap_region_x_begin * cameraFrame.size[1]), 0),
-           Point(cameraFrame.size[1], int(cap_region_y_end * cameraFrame.size[0])));
+           Point(cameraFrame.size[1],
+                 int(cap_region_y_end * cameraFrame.size[0])));
 	Mat smallFrame(cameraFrame, ROI);
 
 	hand = removeBackground(smallFrame, pBackSub);
@@ -244,71 +265,84 @@ int main(int argc, char** argv) {
 	Mat threshImage;
 	double thresholdValue = 60; // CHANGE?
 	threshold(hand, threshImage, thresholdValue, 255, THRESH_BINARY);
-	dilate(threshImage, threshImage, Mat(), Point(-1, -1), 2, BORDER_CONSTANT, morphologyDefaultBorderValue());
+	dilate(threshImage,
+         threshImage,
+         Mat(),
+         Point(-1, -1),
+         2,
+         BORDER_CONSTANT,
+         morphologyDefaultBorderValue());
 	imshow("threshold", threshImage);
 
 	// Create contours & defects
 	vector<vector<Point> > contours;
 	vector<Vec4i> hierarchy;
-	findContours(threshImage, contours, hierarchy, RETR_LIST, CHAIN_APPROX_SIMPLE);
+	findContours(threshImage,
+               contours,
+               hierarchy,
+               RETR_LIST,
+               CHAIN_APPROX_SIMPLE);
 
 	Mat contoursImage = Mat::zeros(threshImage.rows, threshImage.cols, CV_8UC3);
 	Scalar color(255, 0, 0);
 	drawContours(contoursImage, contours, -1, color, 1, 8, hierarchy);
 
 	int maxContour = getMaxContour(contours);
+  float average = -1;
 
-	if (maxContour == -1) {
-		continue;
-	}
-	vector<Vec4i> defects = getDefects(contours[maxContour]);
-	showConvexityHull(contours, maxContour, hierarchy, contoursImage);
-	showConvexityDefects(defects, contours[maxContour], contoursImage);
+	if (maxContour != -1) {
 
-	// Count fingers
-	int nFingers = countFingers(contours[maxContour], defects);
+  	vector<Vec4i> defects = getDefects(contours[maxContour]);
+  	showConvexityHull(contours, maxContour, hierarchy, contoursImage);
+  	showConvexityDefects(defects, contours[maxContour], contoursImage);
 
-	// Calculate average number of fingers (nbFrames frames)
-	float average = averageFinger(contours[maxContour], defects, nFingers);
+  	// Count fingers
+  	int nFingers = countFingers(contours[maxContour], defects);
 
-  float margin = 0.5;
+  	// Calculate average number of fingers (nbFrames frames)
+  	average = averageFinger(contours[maxContour], defects, nFingers);
 
-	// Actions
-	if (defects.size() > 0) {
-		if (abs(average - 1) < margin) {
-      // One finger up -> draw with the point
-			Point point = getFingertip(defects, contours[maxContour], cameraFrame, nFingers);
-			//circle(cameraFrame, point, 3, CV_RGB(0, 0, 0), 3, 8);
-			/*if (drawn.size() < nbFrames) {
-				drawn.push_back(point);
-			}
-			else {
-				assert(!drawn.empty());
-				drawn.erase(drawn.begin());
-				drawn.push_back(point);
-			}*/
-			drawn.push_back(point);
+    float margin = 0.5;
 
-		} else if (abs(average - 2) < margin) {
-      // Two fingers up -> erase with these fingers
-      // TO DO
-    } else if (abs(average - 5) < margin) {
-      // Five fingers up -> erase
-      drawn.clear();
-    }
-	}
+  	// Actions
+  	if (defects.size() > 0) {
+  		if (abs(average - 1) < margin) {
+        // One finger up -> draw with the point
+  			Point point = getFingertip(defects,
+                                   contours[maxContour],
+                                   cameraFrame,
+                                   nFingers);
+  			//circle(cameraFrame, point, 3, CV_RGB(0, 0, 0), 3, 8);
+  			/*if (drawn.size() < nbFrames) {
+  				drawn.push_back(point);
+  			}
+  			else {
+  				assert(!drawn.empty());
+  				drawn.erase(drawn.begin());
+  				drawn.push_back(point);
+  			}*/
+  			drawn.push_back(point);
 
-	// Plot
-	if ((defects.size() > 0) &&  !drawn.empty() ) {
-		for (int i = 0; i < drawn.size(); i++) {
-			circle(cameraFrame, drawn[i], 2, CV_RGB(0, 0, 0), 3, 8);
-		}
-	}
+  		} else if (abs(average - 2) < margin) {
+        // Two fingers up -> erase with these fingers
+        // TO DO
+      } else if (abs(average - 5) < margin) {
+        // Five fingers up -> erase
+        drawn.clear();
+      }
+  	}
+
+  	// Plot
+  	if ((defects.size() > 0) &&  !drawn.empty() ) {
+  		for (int i = 0; i < drawn.size(); i++) {
+  			circle(cameraFrame, drawn[i], 2, CV_RGB(0, 0, 0), 3, 8);
+  		}
+  	}
+
+  }
+
 	imshow("contours + defects", contoursImage);
 	imshow("cam", cameraFrame);
-
-
-	//cout << nFingers << endl;
 
 	if (countFrames % nbFrames == 0) {
 		cout << "Average: " << average << endl;
