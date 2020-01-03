@@ -96,7 +96,7 @@ int countFingers(vector<Point> contour, vector<Vec4i> defects) {
       double angle = acos((b * b + c * c - a * a) / (2 * b * c));
 
       int depthThresh = 5000; //CHANGE?
-      if (angle <= 3.14159/2 && defects[i].val[3] > depthThresh) {
+      if (angle <= 3.14159/1.5 && defects[i].val[3] > depthThresh) {
         count++;
       }
     }
@@ -257,6 +257,10 @@ int main(int argc, char** argv) {
 	drawContours(contoursImage, contours, -1, color, 1, 8, hierarchy);
 
 	int maxContour = getMaxContour(contours);
+
+	if (maxContour == -1) {
+		continue;
+	}
 	vector<Vec4i> defects = getDefects(contours[maxContour]);
 	showConvexityHull(contours, maxContour, hierarchy, contoursImage);
 	showConvexityDefects(defects, contours[maxContour], contoursImage);
@@ -275,15 +279,15 @@ int main(int argc, char** argv) {
       // One finger up -> draw with the point
 			Point point = getFingertip(defects, contours[maxContour], cameraFrame, nFingers);
 			//circle(cameraFrame, point, 3, CV_RGB(0, 0, 0), 3, 8);
-			if (drawn.size() < nbFrames) {
+			/*if (drawn.size() < nbFrames) {
 				drawn.push_back(point);
 			}
 			else {
 				assert(!drawn.empty());
 				drawn.erase(drawn.begin());
 				drawn.push_back(point);
-			}
-			//drawn.push_back(point);
+			}*/
+			drawn.push_back(point);
 
 		} else if (abs(average - 2) < margin) {
       // Two fingers up -> erase with these fingers
@@ -295,11 +299,11 @@ int main(int argc, char** argv) {
 	}
 
 	// Plot
-	/*if ((defects.size() > 0) &&  !drawn.empty() ) {
+	if ((defects.size() > 0) &&  !drawn.empty() ) {
 		for (int i = 0; i < drawn.size(); i++) {
 			circle(cameraFrame, drawn[i], 2, CV_RGB(0, 0, 0), 3, 8);
 		}
-	}*/
+	}
 	imshow("contours + defects", contoursImage);
 	imshow("cam", cameraFrame);
 
