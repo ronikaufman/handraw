@@ -16,14 +16,21 @@ using namespace std;
 float cap_region_x_begin = 0.5;
 float cap_region_y_end = 0.8;
 
-// delay for update of the number of
+// delay for update of the number of fingers
 int nbFrames = 15;
 
 // storage for the number of shown fingers in the last nbFrames frames
 vector<int> fingers(nbFrames, -1);
 
-// drawn points
-vector<Point> drawn(0);
+// drawn lines
+vector<vector<Point> > drawn(0);
+// current line
+vector<Point> currentLine(0);
+// erased points
+vector<Point> eraser(0);
+
+// true if the user is currently drawing a line
+bool drawingLine = false;
 
 
 // ********** functions **********
@@ -316,6 +323,7 @@ int main(int argc, char** argv) {
     	if (defects.size() > 0) {
     		if (abs(average - 1) < margin) {
           // One finger up -> draw with the point
+
     			Point point = getFingertip(defects,
                                      contours[maxContour],
                                      cameraFrame,
@@ -329,12 +337,31 @@ int main(int argc, char** argv) {
     				drawn.erase(drawn.begin());
     				drawn.push_back(point);
     			}*/
-    			drawn.push_back(point);
+    			currentLine.push_back(point);
 
-    		} else if (abs(average - 2) < margin) {
+    		} else if (!currentLine.empty()) {
+          // begin a new line
+          drawn.push_back(currentLine);
+          currentLine.clear();
+        }
+
+        if (abs(average - 2) < margin) {
           // Two fingers up -> erase with these fingers
-          // TO DO
-        } else if (abs(average - 5) < margin) {
+  				Point point = getFingertip(defects,
+  									contours[maxContour],
+  									cameraFrame,
+  									nFingers);
+  				if (eraser.size() < 1) {
+  					eraser.push_back(point);
+  				}
+  				else {
+  					assert(!eraser.empty());
+  					eraser.erase(eraser.begin());
+  					eraser.push_back(point);
+  				}
+        }
+
+        if (abs(average - 5) < margin) {
           // Five fingers up -> erase
           drawn.clear();
         }
@@ -343,9 +370,19 @@ int main(int argc, char** argv) {
     	// Plot
     	if ((defects.size() > 0) &&  !drawn.empty() ) {
     		for (int i = 0; i < drawn.size(); i++) {
-    			circle(cameraFrame, drawn[i], 2, CV_RGB(0, 0, 0), 3, 8);
+    			circle(cameraFrame, currentLine[i], 2, CV_RGB(0, 0, 0), 3, 8);
     		}
     	}
+  		if ((defects.size() > 0) && !eraser.empty()) {
+  			for (int i = 0; i < eraser.size(); i++) {
+  				circle(cameraFrame, currentLine[i], 4, CV_RGB(0, 0, 0), 3, 8);
+  			}
+  		}
+
+      polylines(cameraFrame, currentLine, false, CV_RGB(0, 0, 0), 3, 8, 0);
+      for (int i = 0; i < drawn.size(); i++) {
+        polylines(cameraFrame, drawn[i], false, CV_RGB(0, 0, 0), 3, 8, 0);
+      }
 
     }
 
