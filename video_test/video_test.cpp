@@ -155,7 +155,8 @@ void showConvexityDefects(vector<Vec4i> defects,
   }
 }
 
-// returns the tip of the finger (the furthest from the contour's centroid)
+// returns the tip of the finger
+// (the furthest from the contour's centroid and above it)
 
 Point getFingertip(vector<Vec4i> defects,
                    vector<Point> contour,
@@ -165,21 +166,8 @@ Point getFingertip(vector<Vec4i> defects,
   Moments m = moments(contour);
 	Point centroid(m.m10/m.m00, m.m01/m.m00);
 
-	//Point max(contour[defects[0].val[0]]);
   Point max;
   double maxDist = 0;
-
-  /*
-	max.x = max.x + Image.size[1] - int(cap_region_x_begin * Image.size[1]);
-	for (int i = 0; i < defects.size(); i++) {
-		int start = defects[i].val[0];
-		Point ptStart(contour[start]);
-		ptStart.x = ptStart.x + Image.size[1] - int(cap_region_x_begin * Image.size[1]);
-		if (max.y > ptStart.y) {
-			max = ptStart;
-		}
-	}
-  */
 
   for (int i = 0; i < defects.size(); i++) {
     int start = defects[i].val[0];
@@ -193,6 +181,23 @@ Point getFingertip(vector<Vec4i> defects,
 
   max.x = max.x + Image.size[1] - int(cap_region_x_begin * Image.size[1]);
 	return max;
+}
+
+// deletes the point p from defects
+
+void erasePoint(vector<Vec4i> defects,
+                Point p,
+                vector<Point> contour,
+                Mat& Image) {
+  for (int i = 0; i < defects.size(); i++) {
+    int start = defects[i].val[0];
+    Point pt(contour[start]);
+    pt.x = pt.x + Image.size[1] - int(cap_region_x_begin * Image.size[1]);
+    if (pt == p) {
+      defects.erase(defects.begin() + i);
+      break;
+    }
+  }
 }
 
 // returns the number of fingers shown
@@ -225,6 +230,12 @@ float averageFinger(vector<Point> contour,
 	average = average / nbFrames*1.0;
 
 	return average;
+}
+
+// erases the point p in drawn
+
+void eraseWith(Point p) {
+
 }
 
 
@@ -353,18 +364,30 @@ int main(int argc, char** argv) {
 
         if (abs(average - 2) < margin) {
           // Two fingers up -> erase with these fingers
-  				Point point = getFingertip(defects,
-  									contours[maxContour],
-  									cameraFrame,
-  									nFingers);
+  				Point point1 = getFingertip(defects,
+  									                  contours[maxContour],
+  									                  cameraFrame,
+  									                  nFingers);
+          erasePoint(defects, point1, contours[maxContour], cameraFrame);
+          Point point2 = getFingertip(defects,
+                                      contours[maxContour],
+         									            cameraFrame,
+         									            nFingers);
+
   				if (eraser.size() < 1) {
-  					eraser.push_back(point);
+  					eraser.push_back(point1);
+            eraser.push_back(point2);
   				}
   				else {
   					assert(!eraser.empty());
   					eraser.erase(eraser.begin());
-  					eraser.push_back(point);
+            eraser.erase(eraser.begin());
+  					eraser.push_back(point1);
+            eraser.push_back(point2);
   				}
+
+          eraseWith(point1);
+          eraseWith(point2);
         }
 
         if (abs(average - 5) < margin) {
