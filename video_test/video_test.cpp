@@ -29,9 +29,6 @@ vector<Point> currentLine(0);
 // erased points
 vector<Point> eraser(0);
 
-// true if the user is currently drawing a line
-bool drawingLine = false;
-
 
 // ********** functions **********
 
@@ -67,7 +64,7 @@ int getMaxContour(vector<vector<Point> > contours) {
   return index;
 }
 
-// get convexity convexityDefects
+// returns convexity defects
 
 vector<Vec4i> getDefects(vector<Point> contour) {
   vector<Point> hull;
@@ -107,13 +104,13 @@ int countFingers(vector<Point> contour, vector<Vec4i> defects) {
                     + pow((ptEnd.y - ptFar.y), 2));
       double angle = acos((b * b + c * c - a * a) / (2 * b * c));
 
-      int depthThresh = 8000; //CHANGE?
+      int depthThresh = 8000;
       if (angle <= 3.14159/1.5 && defects[i].val[3] > depthThresh) {
         count++;
       }
     }
   }
-  return (count);
+  return (count + 1);
 }
 
 // show convexity hulls (computes it again)
@@ -130,7 +127,6 @@ void showConvexityHull(vector<vector<Point> > contours,
   }
   drawContours(Image, hull, maxContour, CV_RGB(0, 0, 255), 2, 8, hierarchy);
 }
-
 
 // show convexity getDefects
 // only for testing
@@ -208,7 +204,6 @@ float averageFinger(vector<Point> contour,
                     int nFingers) {
 	int i = 0;
 	while ((i < nbFrames) && (fingers[i] != -1)) {
-
 		i++;
 	}
 
@@ -294,8 +289,8 @@ int main(int argc, char** argv) {
 
   // Create Background Subtractor object
   Ptr<BackgroundSubtractor> pBackSub;
-  int history = 500; //CHANGE?
-  double varThreshold = 400; // CHANGE?
+  int history = 500;
+  double varThreshold = 400;
   //pBackSub = createBackgroundSubtractorMOG2(history, varThreshold);
   pBackSub = createBackgroundSubtractorKNN(history, varThreshold,true);
 
@@ -323,11 +318,11 @@ int main(int argc, char** argv) {
 
     // Identify hand
   	hand = removeBackground(cameraFrame, pBackSub);
-  	imshow("only hand", hand); // for testing
+  	//imshow("only hand", hand); // for testing
 
   	// Create Threshold image
   	Mat threshImage;
-  	double thresholdValue = 60; // CHANGE?
+  	double thresholdValue = 100;
   	threshold(hand, threshImage, thresholdValue, 255, THRESH_BINARY);
   	dilate(threshImage,
            threshImage,
@@ -348,9 +343,9 @@ int main(int argc, char** argv) {
                  CHAIN_APPROX_SIMPLE);
 
     // for testing:
-  	Mat contoursImage = Mat::zeros(threshImage.rows, threshImage.cols, CV_8UC3);
-  	Scalar color(255, 0, 0);
-  	drawContours(contoursImage, contours, -1, color, 1, 8, hierarchy);
+  	//Mat contoursImage = Mat::zeros(threshImage.rows, threshImage.cols, CV_8UC3);
+  	//Scalar color(255, 0, 0);
+  	//drawContours(contoursImage, contours, -1, color, 1, 8, hierarchy);
 
   	int maxContour = getMaxContour(contours);
     float average = -1;
@@ -358,36 +353,23 @@ int main(int argc, char** argv) {
   	if (maxContour != -1) {
 
     	vector<Vec4i> defects = getDefects(contours[maxContour]);
-    	showConvexityHull(contours, maxContour, hierarchy, contoursImage);
-    	showConvexityDefects(defects, contours[maxContour], contoursImage);
+    	//showConvexityHull(contours, maxContour, hierarchy, contoursImage);
+    	//showConvexityDefects(defects, contours[maxContour], contoursImage);
 
     	// Count fingers
     	int nFingers = countFingers(contours[maxContour], defects);
 
     	// Calculate average number of fingers (nbFrames frames)
-
     	average = averageFinger(contours[maxContour], defects, nFingers);
-
-
-      float margin = 0.5;
 
     	// Actions
     	if (defects.size() > 0) {
-    		if (average <= 1.5) {
+    		if (average > 0.6 && average <= 1.7) {
           // One finger up -> draw with the point
     			Point point = getFingertip(defects,
                                      contours[maxContour],
                                      cameraFrame,
                                      nFingers);
-    			//circle(cameraFrame, point, 3, CV_RGB(0, 0, 0), 3, 8);
-    			/*if (drawn.size() < nbFrames) {
-    				drawn.push_back(point);
-    			}
-    			else {
-    				assert(!drawn.empty());
-    				drawn.erase(drawn.begin());
-    				drawn.push_back(point);
-    			}*/
     			currentLine.push_back(point);
     		} else if (!currentLine.empty()) {
           // begin a new line
@@ -395,8 +377,8 @@ int main(int argc, char** argv) {
           currentLine.clear();
         }
 
-        if (average > 1.5 && average <= 3.5) {
-          // Two fingers up -> erase with the one on the left
+        if (average > 2.8 && average <= 3.6) {
+          // Three fingers up -> erase with the one on the left
   				Point point1 = getFingertip(defects,
   									                  contours[maxContour],
   									                  cameraFrame,
@@ -416,19 +398,12 @@ int main(int argc, char** argv) {
 
   				if (eraser.size() < 1) {
             eraser.push_back(point);
-  					//eraser.push_back(point1);
-            //eraser.push_back(point2);
   				} else {
   					assert(!eraser.empty());
   					eraser.erase(eraser.begin());
-            //eraser.erase(eraser.begin());
             eraser.push_back(point);
-  					//eraser.push_back(point1);
-            //eraser.push_back(point2);
   				}
 
-          //eraseWith(point1);
-          //eraseWith(point2);
           eraseWith(point);
 
       		if ((defects.size() > 0) && !eraser.empty()) {
@@ -438,7 +413,7 @@ int main(int argc, char** argv) {
       		}
         }
 
-        if (average > 3.5) {
+        if (average > 4.3) {
           // Five fingers up -> erase
           drawn.clear();
         }
@@ -458,7 +433,7 @@ int main(int argc, char** argv) {
 
     }
 
-  	imshow("contours + defects", contoursImage);
+  	//imshow("contours + defects", contoursImage);
   	imshow("cam", cameraFrame);
 
   	if (countFrames % nbFrames == 0) {
