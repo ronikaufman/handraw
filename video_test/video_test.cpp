@@ -331,7 +331,7 @@ int main(int argc, char** argv) {
            2,
            BORDER_CONSTANT,
            morphologyDefaultBorderValue());
-  	imshow("threshold", threshImage); // for testing
+  	//imshow("threshold", threshImage); // for testing
 
   	// Create contours & defects
   	vector<vector<Point> > contours;
