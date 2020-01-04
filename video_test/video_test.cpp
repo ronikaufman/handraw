@@ -235,7 +235,36 @@ float averageFinger(vector<Point> contour,
 // erases the point p in drawn
 
 void eraseWith(Point p) {
+  float delta = 5; // proximity tolerance
+  int i = 0;
+  bool cut = false;
+  while (i < drawn.size()) {
+    vector<Point> line = drawn[i];
+    for (int j = 0; j < line.size(); j++) {
+      if (norm(line[j] - p) < delta) { // delete line[j]
+        if (j > 0) {
+          vector<Point> secondHalf;
+          copy(line.begin() + j + 1, line.end(), secondHalf.begin());
+          drawn.push_back(secondHalf);
+        }
 
+        if (j < line.size() - 1) {
+          vector<Point> firstHalf;
+          copy(line.begin(), line.begin() + j, firstHalf.begin());
+          drawn.push_back(firstHalf);
+        }
+
+        drawn.erase(drawn.begin() + i);
+
+        cut = true;
+        break;
+      }
+    }
+
+    if (!cut) {
+      i++;
+    }
+  }
 }
 
 
