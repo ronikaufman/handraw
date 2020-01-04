@@ -239,18 +239,24 @@ void eraseWith(Point p) {
   int i = 0;
   bool cut = false;
   while (i < drawn.size()) {
+    cut = false;
     vector<Point> line = drawn[i];
+
     for (int j = 0; j < line.size(); j++) {
       if (norm(line[j] - p) < delta) { // delete line[j]
         if (j > 0) {
-          vector<Point> secondHalf;
-          copy(line.begin() + j + 1, line.end(), secondHalf.begin());
+          vector<Point> secondHalf(0);
+          for (int k = j + 1; k < line.size(); k++) {
+            secondHalf.push_back(line[k]);
+          }
           drawn.push_back(secondHalf);
         }
 
         if (j < line.size() - 1) {
-          vector<Point> firstHalf;
-          copy(line.begin(), line.begin() + j, firstHalf.begin());
+          vector<Point> firstHalf(0);
+          for (int k = 0; k < j; k++) {
+            firstHalf.push_back(line[k]);
+          }
           drawn.push_back(firstHalf);
         }
 
