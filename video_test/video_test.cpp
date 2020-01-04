@@ -17,7 +17,7 @@ float cap_region_x_begin = 0.5;
 float cap_region_y_end = 0.8;
 
 // delay for update of the number of fingers
-int nbFrames = 15;
+int nbFrames = 10;
 
 // storage for the number of shown fingers in the last nbFrames frames
 vector<int> fingers(nbFrames, -1);
@@ -107,13 +107,13 @@ int countFingers(vector<Point> contour, vector<Vec4i> defects) {
                     + pow((ptEnd.y - ptFar.y), 2));
       double angle = acos((b * b + c * c - a * a) / (2 * b * c));
 
-      int depthThresh = 5000; //CHANGE?
+      int depthThresh = 8000; //CHANGE?
       if (angle <= 3.14159/1.5 && defects[i].val[3] > depthThresh) {
         count++;
       }
     }
   }
-  return count;
+  return (count);
 }
 
 // show convexity hulls (computes it again)
@@ -373,9 +373,8 @@ int main(int argc, char** argv) {
 
     	// Actions
     	if (defects.size() > 0) {
-    		if (abs(average - 1) < margin) {
+    		if (average <= 1.5) {
           // One finger up -> draw with the point
-
     			Point point = getFingertip(defects,
                                      contours[maxContour],
                                      cameraFrame,
@@ -390,15 +389,14 @@ int main(int argc, char** argv) {
     				drawn.push_back(point);
     			}*/
     			currentLine.push_back(point);
-
     		} else if (!currentLine.empty()) {
           // begin a new line
           drawn.push_back(currentLine);
           currentLine.clear();
         }
 
-        if (abs(average - 2) < margin) {
-          // Two fingers up -> erase with these fingers
+        if (average > 1.5 && average <= 3.5) {
+          // Two fingers up -> erase with the one on the left
   				Point point1 = getFingertip(defects,
   									                  contours[maxContour],
   									                  cameraFrame,
@@ -409,23 +407,38 @@ int main(int argc, char** argv) {
          									            cameraFrame,
          									            nFingers);
 
+          Point point;
+          if (point1.x < point2.x) {
+            point = point1;
+          } else {
+            point = point2;
+          }
+
   				if (eraser.size() < 1) {
-  					eraser.push_back(point1);
-            eraser.push_back(point2);
-  				}
-  				else {
+            eraser.push_back(point);
+  					//eraser.push_back(point1);
+            //eraser.push_back(point2);
+  				} else {
   					assert(!eraser.empty());
   					eraser.erase(eraser.begin());
-            eraser.erase(eraser.begin());
-  					eraser.push_back(point1);
-            eraser.push_back(point2);
+            //eraser.erase(eraser.begin());
+            eraser.push_back(point);
+  					//eraser.push_back(point1);
+            //eraser.push_back(point2);
   				}
 
-          eraseWith(point1);
-          eraseWith(point2);
+          //eraseWith(point1);
+          //eraseWith(point2);
+          eraseWith(point);
+
+      		if ((defects.size() > 0) && !eraser.empty()) {
+      			for (int i = 0; i < eraser.size(); i++) {
+    				  circle(cameraFrame, eraser[i], 6, CV_RGB(255, 255,255), 3, 8);
+      			}
+      		}
         }
 
-        if (abs(average - 5) < margin) {
+        if (average > 3.5) {
           // Five fingers up -> erase
           drawn.clear();
         }
@@ -437,11 +450,6 @@ int main(int argc, char** argv) {
     			circle(cameraFrame, currentLine[i], 1, CV_RGB(0, 0, 0), 3, 8);
     		}
     	}
-  		if ((defects.size() > 0) && !eraser.empty()) {
-  			for (int i = 0; i < eraser.size(); i++) {
-  				circle(cameraFrame, eraser[i], 4, CV_RGB(0, 0, 0), 3, 8);
-  			}
-  		}
 
       polylines(cameraFrame, currentLine, false, CV_RGB(0, 0, 0), 3, 8, 0);
       for (int i = 0; i < drawn.size(); i++) {
@@ -463,7 +471,7 @@ int main(int argc, char** argv) {
 
   } // end of while
 
-  // Closes all the windows
+  // Close all the windows
   destroyAllWindows();
   return 0;
 } // end of main
