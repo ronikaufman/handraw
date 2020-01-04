@@ -202,9 +202,11 @@ float averageFinger(vector<Point> contour,
                     vector<Vec4i> defects,
                     int nFingers) {
 	int i = 0;
-	while ((fingers[i] != -1) && (i < nbFrames)) {
+	while ((i < nbFrames) && (fingers[i] != -1)) {
+
 		i++;
 	}
+
 	if (i < nbFrames) {
 		fingers[i] = nFingers;
 	}
@@ -212,6 +214,7 @@ float averageFinger(vector<Point> contour,
 		assert(!fingers.empty());
 		fingers.erase(fingers.begin());
 		fingers.push_back(nFingers);
+
 	}
 	float average = 0;
 	for (int i = 0; i < nbFrames; i++) {
@@ -220,6 +223,7 @@ float averageFinger(vector<Point> contour,
 		}
 	}
 	average = average / nbFrames*1.0;
+
 	return average;
 }
 
@@ -315,7 +319,9 @@ int main(int argc, char** argv) {
     	int nFingers = countFingers(contours[maxContour], defects);
 
     	// Calculate average number of fingers (nbFrames frames)
+
     	average = averageFinger(contours[maxContour], defects, nFingers);
+
 
       float margin = 0.5;
 
@@ -368,14 +374,14 @@ int main(int argc, char** argv) {
     	}
 
     	// Plot
-    	if ((defects.size() > 0) &&  !drawn.empty() ) {
-    		for (int i = 0; i < drawn.size(); i++) {
-    			circle(cameraFrame, currentLine[i], 2, CV_RGB(0, 0, 0), 3, 8);
+    	if ((defects.size() > 0) &&  !currentLine.empty() ) {
+    		for (int i = 0; i < currentLine.size(); i++) {
+    			circle(cameraFrame, currentLine[i], 1, CV_RGB(0, 0, 0), 3, 8);
     		}
     	}
   		if ((defects.size() > 0) && !eraser.empty()) {
   			for (int i = 0; i < eraser.size(); i++) {
-  				circle(cameraFrame, currentLine[i], 4, CV_RGB(0, 0, 0), 3, 8);
+  				circle(cameraFrame, eraser[i], 4, CV_RGB(0, 0, 0), 3, 8);
   			}
   		}
 
